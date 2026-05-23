@@ -1,165 +1,154 @@
 # 🌸 Project 2 — Data Classification Using AI
 
-> **DecodeLabs Industrial Training Kit · Batch 2026**  
-> **Track:** Predictive Phase — Supervised Learning
-
 ---
 
 ## 📋 Table of Contents
 
-1. [Overview](#overview)
-2. [Learning Objectives](#learning-objectives)
-3. [Core Concepts](#core-concepts)
-4. [The Pipeline — 8 Steps](#the-pipeline--8-steps)
-5. [Project Structure](#project-structure)
-6. [Setup & Installation](#setup--installation)
-7. [How to Run](#how-to-run)
+1. [Project Idea](#project-idea)
+2. [What Is Required](#what-is-required)
+3. [What Is Implemented](#what-is-implemented)
+4. [Core Concepts](#core-concepts)
+5. [The Full Pipeline](#the-full-pipeline)
+6. [Project Structure](#project-structure)
+7. [Setup & Run](#setup--run)
 8. [How to Test](#how-to-test)
 9. [Output Files](#output-files)
-10. [Understanding the Results](#understanding-the-results)
-11. [Experiments to Try](#experiments-to-try)
-12. [Real-World Applications](#real-world-applications)
-13. [What's Next (Project 3)](#whats-next-project-3)
+10. [Experiments to Try](#experiments-to-try)
+11. [Real-World Applications](#real-world-applications)
 
 ---
 
-## Overview
+## Project Idea
 
-Project 2 is the **predictive phase** of the DecodeLabs AI internship. This is where you cross the boundary from deterministic rules into **supervised machine learning** — you stop writing the rules and start letting the data derive the logic.
+Classification is one of the most fundamental tasks in machine learning: given a set of measurements about something, determine which category it belongs to. This project implements a complete, production-style **supervised learning classification pipeline** from raw data all the way to a fully evaluated and visualised model.
 
-You will build a complete **classification pipeline** using the legendary **Iris dataset** and the **K-Nearest Neighbours (KNN)** algorithm. The full journey from raw data to evaluated model is implemented and explained in detail.
+The dataset used is the **Iris dataset** — 150 flower samples described by 4 measurements (sepal length, sepal width, petal length, petal width), each belonging to one of 3 species: Setosa, Versicolor, or Virginica. The algorithm used is **K-Nearest Neighbours (KNN)** — one of the most intuitive yet powerful classifiers in machine learning.
 
-> **"We do not write the rules. We provide history, and the machine derives the logic."**
+The key shift from rule-based logic: instead of writing rules manually, you **provide labelled historical data and let the algorithm derive the decision boundaries itself**.
 
 ---
 
-## Learning Objectives
+## What Is Required
 
-By completing this project, you will:
+| Requirement | Description |
+|------------|-------------|
+| **Load a dataset** | Read and understand a real structured dataset |
+| **Explore the data** | Summarise shape, class distribution, and statistics |
+| **Preprocess** | Apply feature scaling to remove bias |
+| **Split data** | Divide into training and testing sets correctly |
+| **Train a model** | Apply a classification algorithm |
+| **Evaluate** | Measure performance beyond just accuracy |
+| **Visualise** | Produce charts that explain the model's behaviour |
 
-| Skill | Concept |
-|-------|---------|
-| **EDA** | Load, inspect, and summarise a real dataset |
-| **Preprocessing** | Apply StandardScaler to remove feature bias |
-| **Data Splitting** | Correctly partition data into train / test sets |
-| **ML Algorithm** | Implement and understand K-Nearest Neighbours |
-| **Evaluation** | Interpret Accuracy, Precision, Recall, F1, Confusion Matrix |
-| **Tuning** | Find optimal K using the Elbow Method |
-| **Visualisation** | Plot decision boundaries and confusion matrices |
+---
+
+## What Is Implemented
+
+### Complete 8-Step Pipeline
+
+**Step 1 — Exploratory Data Analysis (EDA)**
+Loads the Iris dataset, prints shape, class distribution, and full descriptive statistics (mean, std, min, quartiles, max) for all 4 features.
+
+**Step 2 — Feature Scaling (StandardScaler)**
+Applies `StandardScaler` to transform all features to mean=0, std=1. Fit only on training data to prevent data leakage.
+
+**Step 3 — Train/Test Split**
+80% training / 20% test, with `shuffle=True` to remove ordering bias and `random_state=42` for reproducibility.
+
+**Step 4 — Model Training (KNN, K=5)**
+Trains `KNeighborsClassifier` on the scaled training set using scikit-learn's standard fit/predict API.
+
+**Step 5 & 6 — Prediction + Full Evaluation**
+Produces accuracy score, weighted F1 score, full classification report (precision, recall, F1 per class), and confusion matrix.
+
+**Step 7 — Hyperparameter Tuning (Elbow Method)**
+Tests K values from 1 to 30, plots error rate vs K, identifies the optimal K at the "elbow" of the curve. Retrains if optimal K differs from the default.
+
+**Step 8 — Visualisations**
+Three output charts: elbow curve, confusion matrix heatmap, and 2D decision boundary using petal features.
+
+### Why F1 Score, Not Just Accuracy
+
+```
+Accuracy alone is the "Accuracy Mirage":
+  → On imbalanced data, a model predicting only the majority class
+    can score 99% accuracy while being completely useless.
+
+F1 Score = Harmonic mean of Precision and Recall
+  → Catches models that are gaming accuracy via class imbalance
+  → The professional standard for classification evaluation
+```
+
+### Why Feature Scaling Matters for KNN
+
+```
+Without scaling:
+  Feature A: 0–1000  dominates distance calculations
+  Feature B: 0–1     almost ignored
+
+After StandardScaler:
+  Both features: mean=0, std=1  →  equal contribution to distance
+```
 
 ---
 
 ## Core Concepts
 
-### 1. The Logic Skeleton Shift
+### K-Nearest Neighbours
+
+The Proximity Principle: *similar things exist in close proximity.*
 
 ```
-OLD WAY: Heuristic (if-elif)        NEW WAY: Supervised Learning
-────────────────────────────        ────────────────────────────
-Human writes every rule             Machine derives rules from data
-Fragile at scale                    Generalises to new data
-No learning                         Improves with more examples
-```
-
-### 2. The Iris Benchmark Dataset
-
-The Iris dataset is the "Hello World" of machine learning:
-
-```
-Samples    : 150  (50 per class — perfectly balanced)
-Classes    : 3    → Setosa | Versicolor | Virginica
-Features   : 4    → Sepal Length, Sepal Width,
-                     Petal Length, Petal Width  (all in cm)
-```
-
-Each flower is described by 4 numerical measurements that form its **feature vector**. The model learns which regions of this 4D space correspond to which species.
-
-### 3. The Gatekeeper Rule — Feature Scaling
-
-Without scaling, KNN is **biased**:
-
-```
-Raw Data (Biased)              Standard Scaled (Balanced)
-──────────────────             ──────────────────────────
-Feature A: 0–1000              Feature A: mean=0, std=1
-Feature B: 0–1                 Feature B: mean=0, std=1
-
-Feature A dominates!           All features contribute equally ✅
-```
-
-`StandardScaler` formula: `z = (x - mean) / std`
-
-> ⚠️ **Critical Rule:** Fit the scaler **only on training data**. Never let test data influence the scaler — that's data leakage!
-
-### 4. The K-Nearest Neighbours Algorithm
-
-**The Proximity Principle:** *Similar things exist in close proximity.*
-
-```
-When classifying a new point:
-  1. Calculate distance to ALL training points
+To classify a new data point:
+  1. Calculate distance to every training point
   2. Find the K nearest neighbours
   3. Majority vote → assign that class
 
-K=5 means: "Ask your 5 closest neighbours what class you are."
+K=1  →  Overfitting  (memorises noise)
+K=100 → Underfitting (too generic)
+Optimal K → minimum validation error (the Elbow)
 ```
 
-### 5. Choosing K — The Elbow Method
+### The Confusion Matrix
 
 ```
-K too small (K=1)   → Overfitting  → memorises noise → unstable
-K too large (K=100) → Underfitting → too generic      → inaccurate
-THE ELBOW           → minimum error rate              → optimal K
+                  Predicted Positive    Predicted Negative
+Actual Positive      TP  ✅                 FN  ⚠️ (missed)
+Actual Negative      FP  🔔 (false alarm)   TN  ✅
 ```
 
-### 6. The Accuracy Mirage
+Reading the confusion matrix tells you *how* a model fails — not just *whether* it fails.
 
-> **"99% accuracy is a lie in imbalanced data. We must look deeper."**
+### Precision vs Recall Trade-off
 
-| Metric | What it measures | When it matters |
-|--------|------------------|-----------------|
-| **Accuracy** | % of all correct predictions | Balanced datasets only |
-| **Precision** | Of predicted positives, how many are real? | Spam filters |
-| **Recall** | Of actual positives, how many were caught? | Medical diagnosis |
-| **F1 Score** | Harmonic mean of Precision & Recall | Professional standard |
-
-### 7. The Confusion Matrix — Diagnostic Tool
-
-```
-              Predicted Positive    Predicted Negative
-Actual Positive     TP (✅)               FN (⚠️ missed)
-Actual Negative     FP (🔔 false alarm)   TN (✅)
-```
+| Metric | Measures | Key Use Case |
+|--------|----------|-------------|
+| **Precision** | Of all predicted positives, how many are actually positive? | Spam filter — avoid false alarms |
+| **Recall** | Of all actual positives, how many were caught? | Medical diagnosis — avoid missed detections |
+| **F1** | Harmonic mean of both | General-purpose professional metric |
 
 ---
 
-## The Pipeline — 8 Steps
+## The Full Pipeline
 
 ```
-Step 1 → LOAD & EXPLORE
-         EDA: shape, class distribution, descriptive stats
-
-Step 2 → SCALE (StandardScaler)
-         Remove feature bias → mean=0, std=1
-
-Step 3 → SPLIT (80% train / 20% test)
-         Shuffle=True → removes order bias
-         Random state=42 → reproducible
-
-Step 4 → TRAIN (KNeighborsClassifier, K=5)
-         model.fit(X_train, y_train) ← "memorise the map"
-
-Step 5 → PREDICT
-         predictions = model.predict(X_test)
-
-Step 6 → EVALUATE
-         Accuracy, F1 Score, Classification Report, Confusion Matrix
-
-Step 7 → TUNE (Elbow Method, K=1→30)
-         Find optimal K → retrain if different from 5
-
-Step 8 → VISUALISE
-         Elbow curve, Confusion Matrix heatmap, Decision Boundary
+Raw Dataset (150 × 4)
+      ↓
+ [Step 1] EDA — shape, distribution, statistics
+      ↓
+ [Step 2] StandardScaler — mean=0, std=1 per feature
+      ↓
+ [Step 3] Train/Test Split — 80% / 20%, shuffled
+      ↓
+ [Step 4] KNeighborsClassifier(n_neighbors=5).fit(X_train, y_train)
+      ↓
+ [Step 5] model.predict(X_test)
+      ↓
+ [Step 6] Accuracy, F1, Classification Report, Confusion Matrix
+      ↓
+ [Step 7] Elbow Method — test K=1 to 30, find optimal K
+      ↓
+ [Step 8] Save: elbow_curve.png, confusion_matrix.png, decision_boundary.png
 ```
 
 ---
@@ -169,74 +158,28 @@ Step 8 → VISUALISE
 ```
 Project_2_Data_Classification/
 │
-├── classifier.py           ← Full ML pipeline (run this!)
-├── test_classifier.py      ← Unit test suite
+├── classifier.py           ← Full ML pipeline — run this
+├── test_classifier.py      ← Unit test suite (5 tests)
 ├── elbow_curve.png         ← Generated: optimal K visualisation
-├── confusion_matrix.png    ← Generated: diagnostic heatmap
+├── confusion_matrix.png    ← Generated: TP/TN/FP/FN heatmap
 ├── decision_boundary.png   ← Generated: 2D class regions
 └── README.md               ← This file
 ```
 
 ---
 
-## Setup & Installation
+## Setup & Run
 
 ```bash
-# Install dependencies
 pip install numpy pandas scikit-learn matplotlib
-
-# Or use the global requirements file
-pip install -r ../requirements.txt
-```
-
-**Python version:** 3.9+
-
----
-
-## How to Run
-
-```bash
-cd Project_2_Data_Classification
 python classifier.py
 ```
 
-**Sample output (abbreviated):**
-
+**Results achieved:**
 ```
-🌸 🌸 🌸 PROJECT 2 — DATA CLASSIFICATION USING AI 🌸 🌸 🌸
-
-=================================================================
-  📊  STEP 1 — DATASET EXPLORATION
-=================================================================
-
-  Dataset : Iris Benchmark
-  Samples : 150
-  Features: 4  → ['sepal length (cm)', ...]
-  Classes : 3  → ['setosa', 'versicolor', 'virginica']
-
-=================================================================
-  ⚖️   STEP 2 — FEATURE SCALING (StandardScaler)
-=================================================================
-  Before scaling — mean: [5.84  3.05  3.76  1.20]
-  After  scaling — mean: [0.000 0.000 0.000 0.000]
-
-=================================================================
-  🤖  STEP 4 — MODEL TRAINING (KNN, K=5)
-=================================================================
-  ✅ Model fitted successfully.
-
-=================================================================
-  📈  STEPS 5 & 6 — PREDICTIONS & EVALUATION
-=================================================================
-  Accuracy  : 100.00%
-  F1 Score  : 1.0000
-
-=================================================================
-  🏆  PIPELINE COMPLETE
-=================================================================
-  Optimal K      : 7
-  Test Accuracy  : 100.00%
-  F1 Score       : 1.0000
+Accuracy  : 100.00%
+F1 Score  : 1.0000
+Optimal K : 2  (found via Elbow Method)
 ```
 
 ---
@@ -247,56 +190,32 @@ python classifier.py
 python test_classifier.py
 ```
 
-**Expected output:**
+Tests cover: data loading shape/names, StandardScaler mean/std validation, 80/20 split size, full pipeline accuracy ≥ 90%, and multiple K values producing valid scores.
 
 ```
-====================================================
-  Running Project 2 Test Suite
-====================================================
-✅  load_and_explore() — shape and names validated
-✅  preprocess() — StandardScaler validated (mean≈0, std≈1)
-✅  split_data() — 80/20 split validated
-✅  Full pipeline — Accuracy=100.00%, F1=1.0000
-✅  Multiple K values (1,3,5,7,11) — all valid accuracy scores
-====================================================
-  Result: 5/5 tests passed
-====================================================
+Result: 5/5 tests passed
 ```
 
 ---
 
 ## Output Files
 
-After running, three PNG files are generated:
-
-| File | Description |
-|------|-------------|
-| `elbow_curve.png` | Error rate vs K value — the elbow shows optimal K |
-| `confusion_matrix.png` | Heatmap of TP/TN/FP/FN per class |
-| `decision_boundary.png` | 2D visualisation of learned class regions (petal features) |
-
----
-
-## Understanding the Results
-
-### Why does KNN achieve ~97–100% on Iris?
-
-The Iris dataset is designed to be learnable. Setosa is **linearly separable** from the other two — the petal features alone can perfectly distinguish it. Versicolor and Virginica overlap slightly, which is where KNN may make occasional errors.
-
-### Why do we use F1 instead of accuracy?
-
-In real-world classification (cancer detection, fraud detection), the dataset is often **imbalanced**. A model that always predicts "not cancer" gets 99% accuracy on a dataset where only 1% of cases are positive — but it's completely useless. F1 catches this.
+| File | What It Shows |
+|------|--------------|
+| `elbow_curve.png` | Error rate vs K — reveals where adding more neighbours stops helping |
+| `confusion_matrix.png` | Per-class TP/TN/FP/FN breakdown — the diagnostic tool |
+| `decision_boundary.png` | 2D view of learned class regions using petal length & petal width |
 
 ---
 
 ## Experiments to Try
 
-1. **Change K** — What happens at K=1? K=50? K=149?
-2. **Remove scaling** — Does accuracy drop without StandardScaler?
-3. **Try a different algorithm** — Replace KNN with `DecisionTreeClassifier` or `SVC`
-4. **Feature importance** — Which 2 features are most discriminative?
+1. **Remove scaling** — Does accuracy drop without StandardScaler? By how much?
+2. **Try different K values** — What happens at K=1? K=50? K=149?
+3. **Swap the algorithm** — Replace KNN with `DecisionTreeClassifier` or `RandomForestClassifier`
+4. **Different dataset** — Try `load_wine()` or `load_breast_cancer()` from sklearn
 5. **Cross-validation** — Use `cross_val_score` for a more robust accuracy estimate
-6. **Different dataset** — Try `load_wine()` or `load_breast_cancer()` from sklearn
+6. **Feature selection** — Which 2 of the 4 features are most discriminative on their own?
 
 ---
 
@@ -304,31 +223,13 @@ In real-world classification (cancer detection, fraud detection), the dataset is
 
 | Domain | Classification Problem |
 |--------|----------------------|
-| **Healthcare** | Tumour malignancy (benign vs malignant) |
-| **Finance** | Loan default risk, fraud detection |
+| **Healthcare** | Tumour benign vs malignant, disease diagnosis |
+| **Finance** | Loan default risk, transaction fraud detection |
 | **Email** | Spam vs legitimate messages |
-| **Manufacturing** | Defective vs non-defective parts |
-| **Agriculture** | Plant disease identification |
-| **Autonomous Vehicles** | Road sign recognition |
+| **Manufacturing** | Defective vs passing quality control |
+| **Agriculture** | Plant species and disease identification |
+| **Autonomous Vehicles** | Road sign and obstacle recognition |
 
 ---
 
-## What's Next (Project 3)
-
-Project 2 classifies **what data IS** (passive labelling).  
-Project 3 will predict **what a user WANTS** (active personalisation).
-
-```
-Project 2:  Features ──[KNN]──► Class Label
-            "What species is this flower?"
-
-Project 3:  User Profile ──[Cosine Similarity]──► Ranked Items
-            "What job roles match this person's skills?"
-```
-
-The shift: from **classifying existing data** to **proactively recommending relevant content**.
-
----
-
-> **"Mastering the pipeline from raw data to evaluated model is the bedrock of every professional AI engineer's skill set."**  
-> — DecodeLabs Architecture Briefing
+> Supervised learning classification is the engine behind most AI-powered decision systems in production today. Mastering the full pipeline — from raw data to evaluated model — is the bedrock skill of every professional ML engineer.
