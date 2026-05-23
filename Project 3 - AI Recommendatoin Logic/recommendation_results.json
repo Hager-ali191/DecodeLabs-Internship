@@ -1,0 +1,104 @@
+{
+  "user_skills": [
+    "python",
+    "machine learning",
+    "sql",
+    "pandas",
+    "statistics",
+    "data analysis",
+    "scikit-learn"
+  ],
+  "recommendations": [
+    {
+      "role": "Data Scientist",
+      "score": 0.7335,
+      "match_percent": 73.3,
+      "matching_skills": [
+        "python",
+        "machine learning",
+        "sql",
+        "pandas",
+        "statistics",
+        "data analysis",
+        "scikit-learn"
+      ],
+      "total_role_skills": 14
+    },
+    {
+      "role": "Machine Learning Engineer",
+      "score": 0.4151,
+      "match_percent": 41.5,
+      "matching_skills": [
+        "python",
+        "machine learning",
+        "scikit-learn"
+      ],
+      "total_role_skills": 14
+    },
+    {
+      "role": "Data Analyst",
+      "score": 0.3981,
+      "match_percent": 39.8,
+      "matching_skills": [
+        "python",
+        "sql",
+        "pandas",
+        "statistics",
+        "data analysis"
+      ],
+      "total_role_skills": 12
+    },
+    {
+      "role": "Business Intelligence Analyst",
+      "score": 0.2866,
+      "match_percent": 28.7,
+      "matching_skills": [
+        "sql",
+        "statistics",
+        "data analysis"
+      ],
+      "total_role_skills": 10
+    },
+    {
+      "role": "AI Ethics Researcher",
+      "score": 0.1904,
+      "match_percent": 19.0,
+      "matching_skills": [
+        "python",
+        "machine learning",
+        "statistics"
+      ],
+      "total_role_skills": 10
+    },
+    {
+      "role": "MLOps Engineer",
+      "score": 0.1885,
+      "match_percent": 18.9,
+      "matching_skills": [
+        "python",
+        "machine learning"
+      ],
+      "total_role_skills": 12
+    },
+    {
+      "role": "NLP Engineer",
+      "score": 0.1776,
+      "match_percent": 17.8,
+      "matching_skills": [
+        "python",
+        "machine learning"
+      ],
+      "total_role_skills": 13
+    },
+    {
+      "role": "AI Research Scientist",
+      "score": 0.1581,
+      "match_percent": 15.8,
+      "matching_skills": [
+        "python",
+        "statistics"
+      ],
+      "total_role_skills": 12
+    }
+  ]
+}
