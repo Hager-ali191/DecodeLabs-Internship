@@ -1,8 +1,5 @@
 # 🤖 Project 1: Rule-Based AI Chatbot — ARIA
 
-> **DecodeLabs AI Internship | Batch 2026**
-> *"Before you build systems that learn on their own, you must master the art of teaching a machine through explicit instructions."*
-
 ---
 
 ## 📋 Table of Contents
@@ -19,7 +16,6 @@
 10. [Sample Conversation](#-sample-conversation)
 11. [Extending the Bot](#-extending-the-bot)
 12. [Key Skills Demonstrated](#-key-skills-demonstrated)
-13. [Connection to Future Projects](#-connection-to-future-projects)
 
 ---
 
@@ -27,7 +23,6 @@
 
 **ARIA** (Automated Rule-based Intelligence Assistant) is a terminal-based chatbot built entirely on **deterministic control flow** — no machine learning, no neural networks, no probability. Just pure Python logic.
 
-This is Project 1 of the DecodeLabs AI Internship, and it is **mandatory** for every intern. The reason is deliberate: before you can manage the chaos of a probabilistic AI system (an LLM), you must first master the precision of a logic engine.
 
 | Property | Value |
 |---|---|
@@ -56,10 +51,6 @@ Can hallucinate                            Cannot hallucinate (hard-coded)
 Black box                                  White box (fully traceable)
 Flexible but unpredictable                 Rigid but reliable
 ```
-
-> **Insight from DecodeLabs:** *"Before you can manage the chaos of a probability engine, you must master the precision of a logic engine."*
-
-**ARIA is System 2** — a pure logic engine. This is intentional.
 
 ---
 
@@ -422,33 +413,6 @@ if clean_input.startswith("translate"):
 | **Defensive Programming** | Empty input guard, `KeyboardInterrupt` handling |
 | **Testing** | Automated test suite with clear pass/fail reporting |
 | **Documentation** | Docstrings, inline comments, type hints |
-
----
-
-## 🔮 Connection to Future Projects
-
-This project is deliberately designed as a **conceptual bridge**:
-
-```
-PROJECT 1 (This)           PROJECT 2 (Next)
-─────────────────          ────────────────────────────────
-Discrete Mapping           Continuous Mapping
-Exact Match Lookup         Semantic / Approximate Match
-Hardcoded Link             Learned / Embedding Link
-dict["hello"] → reply      vector_similarity("hello") → reply
-O(1) Hash lookup           Nearest-neighbor search
-RIGID STRUCTURE            FLEXIBLE ARCHITECTURE
-```
-
-In Project 2, the exact string keys of this dictionary will evolve into **vector embeddings** — numerical representations of meaning. Instead of `"hello" == "hello"`, the system will understand that `"hey"`, `"hi"`, and `"greetings"` are semantically similar.
-
-The rule-based logic you've mastered here becomes the **guardrail layer** that keeps those probabilistic systems safe and compliant.
-
----
-
-## 📄 License
-
-Built for educational purposes as part of the DecodeLabs AI Internship program, Batch 2026.
 
 ---
 
