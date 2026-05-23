@@ -1,232 +1,151 @@
-# 🎯 Project 3 — AI Recommendation Logic (Tech Stack Recommender)
-
-> **DecodeLabs Industrial Training Kit · Batch 2026**  
-> **Track:** Personalisation Phase — Pattern Alignment
+# 🎯 Project 3 — AI Recommendation System (Tech Stack Recommender)
 
 ---
 
 ## 📋 Table of Contents
 
-1. [Overview](#overview)
-2. [Learning Objectives](#learning-objectives)
-3. [Core Concepts](#core-concepts)
-4. [The Architecture](#the-architecture)
+1. [Project Idea](#project-idea)
+2. [What Is Required](#what-is-required)
+3. [What Is Implemented](#what-is-implemented)
+4. [Core Concepts](#core-concepts)
 5. [The 4-Step Pipeline](#the-4-step-pipeline)
 6. [Project Structure](#project-structure)
-7. [Setup & Installation](#setup--installation)
-8. [How to Run](#how-to-run)
-9. [How to Test](#how-to-test)
-10. [Output Files](#output-files)
-11. [Understanding the Results](#understanding-the-results)
-12. [Experiments to Try](#experiments-to-try)
-13. [Real-World Applications](#real-world-applications)
-14. [Graduation to Commercial-Grade Logic](#graduation-to-commercial-grade-logic)
+7. [Setup & Run](#setup--run)
+8. [How to Test](#how-to-test)
+9. [Output Files](#output-files)
+10. [Experiments to Try](#experiments-to-try)
+11. [Real-World Applications](#real-world-applications)
 
 ---
 
-## Overview
+## Project Idea
 
-Project 3 is the **personalisation phase** and the capstone of the DecodeLabs AI internship. This is where you become a **Digital Matchmaker** — building a system that connects users to the exact content they need, even before they can fully articulate it themselves.
+Every time Netflix suggests a show, Spotify generates a playlist, or LinkedIn recommends a job — a recommendation engine is running. These systems solve a fundamental problem: given a near-infinite catalogue of items, how do you surface exactly what *this specific user* wants, right now?
 
-You will build a **Tech Stack Recommender** — a content-based filtering engine that:
-- Accepts a user's known skills/technologies as input
-- Transforms them into TF-IDF weighted feature vectors
-- Computes cosine similarity against a catalogue of 18 job roles
-- Returns a ranked Top-N list of the most relevant career paths
+This project builds a **content-based filtering recommendation engine** applied to career guidance: a **Tech Stack Recommender** that takes a user's skills as input and returns a ranked list of the most relevant job roles. The system uses **TF-IDF feature extraction** and **cosine similarity** — the same mathematical foundation used by production recommendation systems at scale.
 
-This is the same core logic powering Netflix, Spotify, Amazon, and every major tech company's recommendation engine.
-
-> **"Recommendation engines serve as digital matchmakers, connecting users to their specific needs before those needs are explicitly articulated."**
+The key shift from classification: instead of asking *"what category does this data belong to?"*, you ask *"what items best match this user's preferences?"* — moving from passive labelling to active, personalised prediction.
 
 ---
 
-## Learning Objectives
+## What Is Required
 
-By completing this project, you will:
+| Requirement | Description |
+|------------|-------------|
+| **User input** | Accept at least 3 user preferences (skills or interests) |
+| **Item catalogue** | A dataset of items with associated attributes/tags |
+| **Matching logic** | Compare user profile to items using similarity |
+| **Ranked output** | Return a Top-N list of the best-matching items |
+| **Cold-start handling** | Gracefully handle users with no or insufficient data |
 
-| Skill | Concept |
-|-------|---------|
-| **Paradigm Shift** | Move from passive classification to active prediction |
-| **Feature Extraction** | Build TF-IDF weighted vectors from text/tag data |
-| **Similarity Math** | Implement and understand cosine similarity |
-| **Pipeline Design** | Architect a 4-step recommendation ranking system |
-| **Cold-Start Handling** | Detect and bypass zero-vector user profiles |
-| **Vector Spaces** | Understand orientation vs magnitude in high dimensions |
-| **Production Thinking** | Export results, log recommendations, handle edge cases |
+---
+
+## What Is Implemented
+
+### The Engine — `TechStackRecommender`
+
+A full content-based filtering engine with:
+- **18 job roles** as the item catalogue, each described by a list of relevant skills and tools
+- **TF-IDF vectorisation** to convert skill lists into weighted numerical vectors
+- **Cosine similarity** to measure the angular alignment between user profile and each job role
+- **4-step ranking pipeline**: Ingestion → Scoring → Sorting → Filtering
+- **Cold-start guard**: rejects profiles with fewer than 3 skills; falls back to trending roles on zero-vector
+- **Interactive mode**: live terminal session for real-time recommendations
+- **JSON export**: saves results to file for downstream use
+- **Pure Python fallback** (`ManualTFIDF`): works even without scikit-learn, showing the math from scratch
+
+### TF-IDF Weighting
+
+Simple binary (1/0) matching treats every word equally — `"python"` and `"quantum computing"` get the same weight even though one appears in 14 roles and the other in only 1. TF-IDF fixes this:
+
+```
+TF(t, d)  = occurrences of term t in document d / total terms in d
+IDF(t)    = log( total documents / documents containing t )
+TF-IDF    = TF × IDF
+
+Effect:
+  "python"            → appears in 14/18 roles → LOW weight  (too common)
+  "quantum computing" → appears in  1/18 roles → HIGH weight (very specific)
+```
+
+### Cosine Similarity
+
+Euclidean distance is sensitive to vector magnitude — a job description with 50 skills will always be "far" from one with 5, even if they share the same themes. Cosine similarity solves this by measuring **angle**, not distance:
+
+```
+         A · B
+cos(θ) = ──────       Range: 0 (no match) → 1 (perfect match)
+         ‖A‖ · ‖B‖
+
+Score 1.0  →  vectors point in identical directions (perfect alignment)
+Score 0.5  →  moderate thematic overlap
+Score 0.0  →  nothing in common
+```
+
+### Cold-Start Handling
+
+```
+User Cold Start  →  profile is a zero vector → cosine = 0 for everything
+Solution         →  require min 3 skills (onboarding) + trending fallback
+
+Item Cold Start  →  new item with no interaction history
+Solution         →  content-based filtering is inherently immune
+                    (new items are recommended immediately via their metadata)
+```
 
 ---
 
 ## Core Concepts
 
-### 1. The Paradigm Shift
+### Content-Based vs Collaborative Filtering
+
+| Method | How It Works | Needs | Used When |
+|--------|-------------|-------|-----------|
+| **Collaborative** | "Users like you also liked..." | Large historical interaction data | Netflix, Amazon at scale |
+| **Content-Based** ✅ | Maps user profile directly to item attributes | Only item metadata | New platforms, no interaction history needed |
+
+This project uses content-based filtering — it works on day one with no historical data.
+
+### Vector Space Representation
+
+Machines understand numbers, not words. To compare a user's skills to a job role's requirements, both must be encoded into the **same numerical vector space**:
 
 ```
-Project 2:  Passive Classification
-            "What class does this data point belong to?"
-            You label existing data.
+Vocabulary (shared):  ["aws", "docker", "python", "sql", ...]
+                           ↑ position 0    ↑ pos 1   ...
 
-Project 3:  Active Prediction
-            "What does this user want next?"
-            You generate personalised content proactively.
-```
+User:     ["python", "sql"]     →  [0, 0, 0.6, 0.8, ...]
+Role A:   ["python", "docker"]  →  [0, 0.7, 0.5, 0,  ...]
+Role B:   ["aws", "docker"]     →  [0.9, 0.7, 0, 0,  ...]
 
-Modern digital environments generate immense noise. Recommendation engines **cure "Choice Overload"** by surfacing the right item at the right time.
-
----
-
-### 2. Two Recommendation Methodologies
-
-| Method | How it Works | Limitation |
-|--------|-------------|------------|
-| **Collaborative Filtering** | "Users like you also liked..." — driven by community behaviour | Requires massive historical interaction data |
-| **Content-Based Filtering** ✅ | Maps user preferences to item attributes directly — driven by item features | Cold-start for new users |
-
-**Project 3 uses Content-Based Filtering** — it works immediately without any historical data, making it perfect for our use case.
-
----
-
-### 3. Bridging the Language Barrier — Vector Mapping
-
-Machines understand numbers, not words like `"Python"` or `"Docker"`.
-
-To make similarity math work, we must convert qualitative skills into **numerical vectors** within a **shared vocabulary space**:
-
-```
-User skills: ["Python", "Cloud", "Automation"]
-                ↓ Vector Mapping ↓
-User vector: [1, 0, 1, 0, 0, 1, 0, ...]   ← TF-IDF weighted
-
-Job Role A:  [1, 1, 1, 0, 0, 1, 0, ...]
-Job Role B:  [0, 0, 0, 1, 1, 0, 1, ...]
-
-Cosine(User, Role A) = 0.89  ← Strong match!
-Cosine(User, Role B) = 0.02  ← Weak match
-```
-
-> ⚠️ **Critical:** Item features and user features **must use the exact same vocabulary**. Naming discrepancies (`"Web Design"` vs `"Frontend Development"`) will cause the similarity math to fail silently.
-
----
-
-### 4. The Limitation of Binary Vectors
-
-Simple binary (1/0) matching treats every word equally:
-
-```
-"software" == "neural networks"  ← both score 1, but very different specificity!
-```
-
-This is the flaw that TF-IDF solves.
-
----
-
-### 5. TF-IDF Weighting — The Upgrade
-
-**Term Frequency–Inverse Document Frequency (TF-IDF)** is the statistical revolution:
-
-```
-TF(t, d)  = Count of term t in document d
-            ─────────────────────────────
-            Total terms in document d
-
-IDF(t)    = log(  Total Documents  )
-                ( ──────────────── )
-                ( Docs with term t )
-
-TF-IDF = TF × IDF
-```
-
-**Effect:**
-- Common terms (appear in all roles) → **LOW weight** (penalised)
-- Specific terms (appear in few roles) → **HIGH weight** (rewarded)
-
-```
-Example:
-"python"          → appears in 14/18 roles → LOW weight
-"quantum computing" → appears in 1/18 roles → HIGH weight
-```
-
-The logarithm in IDF creates a dampening effect — preventing extreme values while preserving the penalty gradient.
-
----
-
-### 6. Cosine Similarity — The Industry Standard
-
-**Why NOT Euclidean distance?**
-
-If two items share identical tags, but one has a much larger feature set (e.g., a massive job description vs a short one), their Euclidean distance will be high — even though they're thematically identical. Euclidean is **magnitude-sensitive**.
-
-**Cosine similarity** measures the **angle** between two vectors:
-
-```
-         A · B
-cos(θ) = ──────
-         ‖A‖‖B‖
-
-Score  1 → Vectors perfectly aligned (identical orientation) ✅
-Score  0 → Vectors orthogonal (no common characteristics)
-Score -1 → Vectors opposite (TF-IDF is non-negative, so this won't occur)
-```
-
-Cosine is **invariant to magnitude** — it cares about the *direction* of preferences, not the size of the profile. This is exactly what we want.
-
----
-
-### 7. The Cold-Start Problem
-
-Even the best pipeline fails without initial data:
-
-| Cold Start Type | Problem | Solution |
-|-----------------|---------|----------|
-| **User Cold Start** | New user → zero vector → cosine = 0 for all items | Onboarding surveys, trending fallback, metadata inference |
-| **Item Cold Start** | New item → no interaction history | Content-based filtering is inherently immune (uses metadata!) |
-
-Our engine implements:
-- **Guard:** Raises an error if fewer than 3 skills are provided
-- **Fallback:** Returns trending popular roles when no vocabulary overlap exists
-
----
-
-## The Architecture
-
-```
-TechStackRecommender
-│
-├── JOB_ROLES catalogue (18 roles, each with skills list)
-│
-├── fit()
-│     Converts skill lists → TF-IDF item matrix
-│     Cached once at startup for efficiency
-│
-├── _build_user_vector(skills)
-│     Projects user skills into the SAME vector space
-│
-└── recommend(user_skills, top_n=5)
-      Step 1: Ingestion  → validate + vectorise
-      Step 2: Scoring    → cosine similarity vs all roles
-      Step 3: Sorting    → descending order
-      Step 4: Filtering  → Top-N slice
+cosine(User, Role A) = 0.74  ← good match
+cosine(User, Role B) = 0.01  ← poor match
 ```
 
 ---
 
 ## The 4-Step Pipeline
 
-### Step 1 — Ingestion
-Capture the user state. Accepts minimum **3 skills** to ensure sufficient data density for accurate matching.
-
-### Step 2 — Scoring
-Loop through every item in the catalogue, calculate its cosine similarity score against the user vector, and store the resulting value.
-
-```python
-score = cosine_similarity(user_vector, item_vector)
-# Score 0.95 → 95% thematic alignment
 ```
+Step 1 — INGESTION
+  Accept user skills (minimum 3)
+  Validate input → detect cold-start
+  Build user TF-IDF vector in the shared vocabulary space
 
-### Step 3 — Sorting
-Organise the scored dataset in **descending order** — the most relevant roles rise to the top.
+Step 2 — SCORING
+  Loop through all 18 job roles
+  Compute cosine similarity: user_vector vs each role_vector
+  Store (role, score, matching_skills) tuples
 
-### Step 4 — Filtering (Top-N)
-Prevent choice overload. Truncate the output to the Top-N list (default: Top 5), displaying only the highest-scoring matches.
+Step 3 — SORTING
+  Sort all scored roles in descending order
+  Most relevant roles rise to the top
+
+Step 4 — FILTERING
+  Slice Top-N results (default: 5)
+  Prevents choice overload
+  Returns clean ranked list to the user
+```
 
 ---
 
@@ -235,78 +154,49 @@ Prevent choice overload. Truncate the output to the Top-N list (default: Top 5),
 ```
 Project_3_AI_Recommendation_System/
 │
-├── recommender.py                 ← Full recommendation engine (run this!)
-├── test_recommender.py            ← Unit test suite
-├── demo_recommendations.png       ← Generated: bar chart of top matches
-├── interactive_recommendations.png ← Generated: from interactive session
-├── recommendation_results.json   ← Generated: exported results
-└── README.md                      ← This file
+├── recommender.py                  ← Full engine — run this
+├── test_recommender.py             ← Unit test suite (8 tests)
+├── generate_visuals.py             ← Generates all charts
+├── recommendation_results.json     ← Generated: exported results
+│
+├── python_ml_data.png              ← Generated: ML/Data profile chart
+├── cloud_devops.png                ← Generated: DevOps profile chart
+├── nlp_research.png                ← Generated: NLP profile chart
+├── full_stack_web.png              ← Generated: Web Dev profile chart
+├── computer_vision.png             ← Generated: CV profile chart
+├── heatmap_all_profiles.png        ← Generated: all profiles × all roles
+├── cosine_explainer.png            ← Generated: similarity math diagram
+│
+└── README.md                       ← This file
 ```
 
 ---
 
-## Setup & Installation
+## Setup & Run
 
 ```bash
 pip install numpy pandas scikit-learn matplotlib
-
-# Or use the global requirements file
-pip install -r ../requirements.txt
-```
-
-> **Note:** The engine also includes a **pure Python fallback** (`ManualTFIDF`) that works without scikit-learn, for maximum educational transparency.
-
-**Python version:** 3.9+
-
----
-
-## How to Run
-
-```bash
-cd Project_3_AI_Recommendation_System
 python recommender.py
 ```
 
-The program runs two modes:
-1. **Demo Mode** — automatically tests 5 predefined skill profiles
-2. **Interactive Mode** — accepts your own skills as input
+The program runs two modes automatically:
+1. **Demo mode** — tests 5 predefined skill profiles, saves charts and JSON
+2. **Interactive mode** — enter your own skills, get real-time recommendations
 
-**Sample interactive session:**
-
+**Sample output:**
 ```
-==================================================================
-  🎮  INTERACTIVE MODE — Tech Stack Recommender
-==================================================================
+Your skills: python, machine learning, sql, pandas, tensorflow
 
-  Enter your skills/technologies (comma-separated).
-  Example: python, machine learning, sql, docker
+  🥇  Rank 1: Data Scientist          0.7335  (73.3% match)
+  🥈  Rank 2: Machine Learning Eng    0.4151  (41.5% match)
+  🥉  Rank 3: Data Analyst            0.3981  (39.8% match)
+  🏅  Rank 4: AI Research Scientist   0.3702  (37.0% match)
+  🏅  Rank 5: MLOps Engineer          0.2891  (28.9% match)
+```
 
-  Your skills: python, machine learning, sql, pandas, tensorflow
-
-  🎯  TOP RECOMMENDATIONS FOR YOUR SKILL PROFILE
-==================================================================
-
-  Your skills : python, machine learning, sql, pandas, tensorflow
-
-  🥇  Rank 1: Data Scientist
-       Cosine Similarity : 0.8742  (87.4% match)
-       Matching Skills   : python, machine learning, sql, pandas
-
-  🥈  Rank 2: Machine Learning Engineer
-       Cosine Similarity : 0.8159  (81.6% match)
-       Matching Skills   : python, machine learning, tensorflow
-
-  🥉  Rank 3: AI Research Scientist
-       Cosine Similarity : 0.7203  (72.0% match)
-       Matching Skills   : python, deep learning, tensorflow
-
-  🏅  Rank 4: Data Engineer
-       Cosine Similarity : 0.5841  (58.4% match)
-       Matching Skills   : python, sql
-
-  🏅  Rank 5: MLOps Engineer
-       Cosine Similarity : 0.5320  (53.2% match)
-       Matching Skills   : python, machine learning
+To regenerate all charts:
+```bash
+python generate_visuals.py
 ```
 
 ---
@@ -317,88 +207,53 @@ The program runs two modes:
 python test_recommender.py
 ```
 
-**Expected output:**
+Tests cover: engine initialisation, Top-N count, score range [0,1], descending sort order, cold-start guard (< 3 skills), cosine similarity edge cases (identical/orthogonal/zero vectors), TF-IDF matrix shape, and different profiles producing different top results.
 
 ```
-====================================================
-  Running Project 3 Test Suite
-====================================================
-✅  Engine initialised — 18 roles in catalogue
-✅  recommend() returns exactly Top-5 list
-✅  All cosine scores are in [0, 1]
-✅  Results are sorted in descending order by cosine score
-✅  Cold-start guard triggered correctly for <3 skills
-✅  manual_cosine_similarity() — identity, orthogonal, zero cases verified
-✅  ManualTFIDF — matrix shape (2, N), non-zero values verified
-✅  Different profiles give different top roles: ML→Data Scientist | Web→Frontend Developer
-====================================================
-  Result: 8/8 tests passed
-====================================================
+Result: 8/8 tests passed
 ```
 
 ---
 
 ## Output Files
 
-| File | Description |
-|------|-------------|
-| `demo_recommendations.png` | Horizontal bar chart of cosine similarity scores for demo profile |
-| `interactive_recommendations.png` | Chart from your interactive session |
-| `recommendation_results.json` | JSON export of top recommendations for downstream use |
-
----
-
-## Understanding the Results
-
-### What does a cosine score of 0.85 mean?
-
-The user's skill vector and the job role's feature vector have an angular alignment of approximately 32° — they point in nearly the same direction in the high-dimensional feature space. Their interests are highly aligned.
-
-### Why might two roles with different skills have the same score?
-
-TF-IDF weighting can equalise roles that share highly specific (rare) terms even if they share fewer total terms. This is intentional — specificity matters more than volume.
+| File | What It Shows |
+|------|--------------|
+| `python_ml_data.png` | Top 5 roles for Python/ML/Data profile |
+| `cloud_devops.png` | Top 5 roles for Cloud/DevOps profile |
+| `nlp_research.png` | Top 5 roles for NLP/Research profile |
+| `full_stack_web.png` | Top 5 roles for Full Stack Web profile |
+| `computer_vision.png` | Top 5 roles for Computer Vision profile |
+| `heatmap_all_profiles.png` | All 5 profiles × 18 roles — full similarity matrix |
+| `cosine_explainer.png` | Visual explanation of the cosine similarity geometry |
+| `recommendation_results.json` | Top matches for first demo profile, JSON format |
 
 ---
 
 ## Experiments to Try
 
-1. **Add more roles** — Add "Blockchain Developer" or "AR/VR Engineer" to `JOB_ROLES`
-2. **Tune Top-N** — Change `top_n` to see Top-3 vs Top-10
-3. **Try TF-IDF variants** — Experiment with `max_features`, `sublinear_tf=True`
-4. **Add rating weights** — Let users rate their skills (beginner/expert) and weight the vector
-5. **Multi-domain recommender** — Recommend courses, books, or projects instead of job roles
-6. **Collaborative filter comparison** — What would change if you used a user-user similarity approach?
+1. **Add more job roles** — Add "Blockchain Developer", "AR/VR Engineer" to `JOB_ROLES`
+2. **Weighted skills** — Let users rate expertise level (1–5) and multiply the vector weights
+3. **Change Top-N** — Try returning Top-3 vs Top-10, observe the difference in usefulness
+4. **Different domain** — Replace job roles with courses, books, or movies and their tags
+5. **Evaluate quality** — Ask domain experts to rate the recommendations and compute NDCG
+6. **Compare methods** — Implement a simple collaborative filter and compare outputs
 
 ---
 
 ## Real-World Applications
 
-| Company | What Their Recommender Does |
-|---------|---------------------------|
-| **Netflix** | Recommends shows based on watch history and genre preferences |
-| **Spotify** | Suggests songs via audio feature vectors and listening patterns |
-| **Amazon** | Surfaces products via purchase history and item attribute matching |
-| **LinkedIn** | Recommends job listings based on profile skills and experience |
-| **YouTube** | Recommends videos based on watch time, topics, and engagement |
-| **Coursera** | Suggests courses based on enrolled topics and career goals |
+| Platform | What the Recommender Does |
+|----------|--------------------------|
+| **Netflix / Spotify** | Matches user taste profile to content feature vectors |
+| **LinkedIn** | Surfaces job listings aligned with profile skills |
+| **Amazon** | Recommends products based on item attribute overlap |
+| **Coursera / edX** | Suggests courses matching stated learning goals |
+| **GitHub** | Recommends repositories based on language and topic tags |
+| **Stack Overflow Jobs** | Matches developer skills to role requirements |
 
-The fundamental principles — **feature extraction** and **cosine similarity** — are the bedrock of all of these.
+The mathematical foundation — **TF-IDF feature extraction + cosine similarity** — is identical across all of these at their core, regardless of scale.
 
 ---
 
-## Graduation to Commercial-Grade Logic
-
-Mastering this project transitions you from classifying what data *is* to **predicting what a user wants**.
-
-```
-Project 1:   Key ──logic──► Value           (deterministic rules)
-Project 2:   Features ──learned──► Label    (supervised classification)
-Project 3:   Profile ──similarity──► Items  (personalised prediction)
-             ↑
-             This is where AI creates direct commercial value.
-```
-
-Whether applied to streaming movies, retail products, or tech stacks, the principles of **feature extraction** and **cosine similarity** remain the bedrock of modern AI. You now have the keys to build engines that navigate the noise of the internet and output flawless, relevant matches.
-
-> **"You are ready to build the Digital Matchmaker."**  
-> — DecodeLabs Architecture Briefing
+> Recommendation systems are where AI creates direct commercial value. They cure "choice overload" by connecting users to what they need before they can fully articulate it themselves. Mastering this pipeline is the bridge between academic ML and production AI engineering.
